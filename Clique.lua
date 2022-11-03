@@ -22,6 +22,9 @@ Clique = AceLibrary("AceAddon-2.0"):new(
 Clique:RegisterDB("CliqueDB")
 local L = AceLibrary:GetInstance("AceLocale-2.0"):new("Clique")
 
+local RestorSelfAutoCastTimeOut = 1;
+local RestorSelfAutoCast = false;
+
 -- Expoxe AceHook and AceEvent to our modules
 Clique:SetModuleMixins("AceHook-2.0", "AceEvent-2.0", "AceDebug-2.0")
 
@@ -39,13 +42,24 @@ function Clique:OnInitialize()
     end
 end
 
+RestorSelfAutoCastFrame = CreateFrame("Frame","RestorSelf",UIParent);
+RestorSelfAutoCastFrame:SetScript("OnUpdate", function()
+	if (RestorSelfAutoCast) then
+		RestorSelfAutoCastTimeOut = RestorSelfAutoCastTimeOut - arg1;
+		if (RestorSelfAutoCastTimeOut < 0) then
+			RestorSelfAutoCast = false;
+			SetCVar("autoSelfCast", "1");
+		end
+	end
+ end);	
+
 function Clique:OnEnable()
     self:LevelDebug(2, "Clique:OnEnable()")
     IndentationLib.addSmartCode(CliqueEditBox)
 
     if GetCVar("AutoSelfCast") == "1" then
-        StaticPopup_Show("CLIQUE_AUTO_SELF_CAST")
-        return
+        --StaticPopup_Show("CLIQUE_AUTO_SELF_CAST")
+        --return
     end
     
     -- Register for ADDON_LOADED so we can load plugins for LOD addons
@@ -250,6 +264,12 @@ function Clique:CastSpell(spell, unit)
 	local restore = nil
 	local targettarget
 	unit = unit or Clique.unit
+	
+	RestorSelfAutoCastTimeOut = 1;
+	if (GetCVar("autoSelfCast") == "1") then
+		RestorSelfAutoCast = true;
+		SetCVar("autoSelfCast", "0");
+	end
     
     -- IMPORTANT: If the unit is targettarget or more, then we need to try
     -- to convert it to a friendly unit (to make click-casting work
