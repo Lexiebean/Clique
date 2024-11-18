@@ -14,7 +14,7 @@ Plugin.fullname = "pfUI UnitFrames"
 Plugin.url = "https://github.com/shagu/pfUI"
 
 function Plugin:Test()
-  return pfUI
+  return pfUI and pfUI.uf
 end
 
 function Plugin:OnEnable()
